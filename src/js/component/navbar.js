@@ -1,17 +1,25 @@
-import React from "react";
+import React, { useState, useContext } from "react";
+// import { Context } from "../store/appContext";
 import { Link } from "react-router-dom";
+import Favorites from "./Favorites.jsx";
+
+import logo from "../../img/star-wars-logo-980.png";
+import "../../styles/navbar.css";
 
 export const Navbar = () => {
-	return (
-		<nav className="navbar navbar-light bg-light mb-3">
-			<Link to="/">
-				<span className="navbar-brand mb-0 h1">React Boilerplate</span>
-			</Link>
-			<div className="ml-auto">
-				<Link to="/demo">
-					<button className="btn btn-primary">Check the Context in action</button>
-				</Link>
-			</div>
-		</nav>
-	);
+  // const { store, actions } = useContext(Context);
+
+  return (
+    <nav className="nav">
+      <div className="nav-aux"></div>
+      <div className="nav-logo">
+        <Link to="/">
+          <img src={logo} alt="Logo Star Wars" style={{ height: "80px" }} />
+        </Link>
+      </div>
+      <div className="nav-dropDown">
+        <Favorites />
+      </div>
+    </nav>
+  );
 };

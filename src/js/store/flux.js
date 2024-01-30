@@ -1,45 +1,40 @@
 const getState = ({ getStore, getActions, setStore }) => {
 	return {
-		store: {
-			demo: [
-				{
-					title: "FIRST",
-					background: "white",
-					initial: "white"
-				},
-				{
-					title: "SECOND",
-					background: "white",
-					initial: "white"
-				}
-			]
+	  store: {
+		characters: [],
+	  },
+	  actions: {
+		addToFavorites: (uid, name) => {
+		  const store = getStore();
+		  const characterExists = store.characters.some(
+			(character) => character.uid === uid && character.name === name
+		  );
+		  console.log(characterExists);
+		  console.log("funky store", store);
+  
+		  if (characterExists) {
+			const updatedCharacter = store.characters.filter(
+			  (itm) => itm.uid !== uid && itm.name !== name
+			);
+			setStore({ characters: updatedCharacter });
+			return;
+		  } else {
+			const newCharacter = [
+			  ...store.characters,
+			  { uid, name, favorite: true }, //preguntar
+			];
+			setStore({ characters: newCharacter });
+		  }
 		},
-		actions: {
-			// Use getActions to call a function within a fuction
-			exampleFunction: () => {
-				getActions().changeColor(0, "green");
-			},
-			loadSomeData: () => {
-				/**
-					fetch().then().then(data => setStore({ "foo": data.bar }))
-				*/
-			},
-			changeColor: (index, color) => {
-				//get the store
-				const store = getStore();
-
-				//we have to loop the entire demo array to look for the respective index
-				//and change its color
-				const demo = store.demo.map((elm, i) => {
-					if (i === index) elm.background = color;
-					return elm;
-				});
-
-				//reset the global store
-				setStore({ demo: demo });
-			}
-		}
+		removeFromFavorites: (uid, name) => {
+		  const store = getStore();
+		  const updatedCharacter = store.characters.filter(
+			(itm) => itm.uid !== uid && itm.name !== name
+		  );
+		  setStore({ characters: updatedCharacter });
+		},
+	  },
 	};
-};
-
-export default getState;
+  };
+  
+  export default getState;
