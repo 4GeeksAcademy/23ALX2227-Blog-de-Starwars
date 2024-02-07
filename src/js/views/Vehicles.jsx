@@ -1,106 +1,76 @@
 import React, { useState, useEffect, useContext } from "react";
-import { Context } from "../store/appContext";
 import { Link } from "react-router-dom";
-import "../../styles/vehicles.css";
-import { MdFavorite, MdFavoriteBorder } from "react-icons/md";
-import imgNotAvaible from "../../img/star-wars-not.png";
+import vehiclesIMG from "../../img/vehicleIMG.png"
+import error404IMG from "../../img/error404IMG.jpg"
 
-const urlApiVehicle = "https://www.swapi.tech/api/vehicles";
-const imgUrl = "https://starwars-visualguide.com/assets/img/vehicles/";
 
-const Vehicles = () => {
-  const [vehicle, setVehicle] = useState([]);
-  const [totalPages, setTotalPages] = useState([]);
-  const [currentPage, setCurrentPage] = useState("?page=1&limit=10");
+import { Context } from "../store/appContext";
 
+import "../../styles/Vehicles.css"
+
+export const Vehicles = () => {
   const { store, actions } = useContext(Context);
+  let vehiclesFavListArr = []
 
-  // Metodo async/await
-  const getAllelements = async () => {
-    const response = await fetch(urlApiVehicle + currentPage);
-    const data = await response.json();
-    setTotalPages([...Array(data.total_pages).keys()]);
+  const [page, setPage] = useState(store.vehiclesData.length)
 
-    const promises = data.results.map(async (element) => {
-      const response = await fetch(element.url);
-      const data = await response.json();
-      return data.result;
-    });
-    const results = await Promise.all(promises);
-    setVehicle(results);
-  };
+  store.vehiclesFavList.map(el => vehiclesFavListArr.push(el.name))
+
 
   useEffect(() => {
-    getAllelements();
-  }, [currentPage]);
+    actions.getAllVehiclesData()
+    setPage(store.vehiclesData.length)
 
-  const handleButtonPage = (page) => {
-    setCurrentPage(`?page=${page}&limit=10`);
-  };
-
-  const handleAddFav = (e, uid, name) => {
-    e.preventDefault();
-    actions.addToFavorites(uid, name);
-  };
+  }, [store.vehiclesData.length]);
 
   return (
-    <div className="vehicles-container">
-      <div className="button-container">
-        <span className="button-50" style={{ cursor: "default" }}>
-          VEHICLES
-        </span>
-        {totalPages.map((_, ind) => (
-          <button
-            className="button-50"
-            role="button"
-            key={ind}
-            value={ind + 1}
-            onClick={(e) => handleButtonPage(e.target.value)}
-          >
-            {ind + 1}
-          </button>
-        ))}
-      </div>
-      <div className="vehicles-cards-view">
-        {vehicle.map((itm, ind) => (
-          <div key={ind} className="vehicles-card-container">
-            <Link to={`vehicle/${itm.uid}`} className="card-link">
-              <div className="vehicles-card-container-img">
-                <img
-                  className="vehicles-card-img"
-                  src={`${imgUrl}${itm.uid}.jpg`}
-                  onError={(e) => (e.target.src = imgNotAvaible)}
-                  alt="Vehicle Image"
-                />
-                <span className="card-favIcon">
-                  {store.characters.some(
-                    (character) =>
-                      character.uid === itm.uid &&
-                      character.name === itm.properties.name
-                  ) ? (
-                    <MdFavorite
-                      onClick={(e) =>
-                        handleAddFav(e, itm.uid, itm.properties.name)
-                      }
-                    />
-                  ) : (
-                    <MdFavoriteBorder
-                      onClick={(e) =>
-                        handleAddFav(e, itm.uid, itm.properties.name)
-                      }
-                    />
-                  )}
-                </span>
-              </div>
-              <span className="vehicles-card-text">
-                <p>{itm.properties.name}</p>
-              </span>
-            </Link>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-};
+    <div className="container">
+      <h1 className={store.vehiclesData.length === 0 ? "hide" : "text-center"} >Vehicles</h1>
 
-export default Vehicles;
+
+      <div className=" text-center" >
+
+        {store.vehiclesData.length === 0 ?
+          <div className="spinner-grow  loadingSpinner d-flex justify-content-center " role="status">
+            <img src={vehiclesIMG} />
+          </div>
+          : store.vehiclesData.map((ele, index) => ele.map((e, i) =>
+            <div className="vehiclesCard m-2  card" key={i} >
+              <img src={e.url.slice(-3, -1) > 43 ? error404IMG : `https://starwars-visualguide.com/assets/img/vehicles/${e.url.slice(-3, -1)}.jpg `} className="card-img-top " alt="Not Found :(" />
+              <div className="card-body text-white text-center" key={i}>
+                <h5 className="card-title">{e.name}</h5>
+                <b>Model</b>
+                <p className="card-text">{e.model}</p>
+
+                <Link to={e.url.length > 33 ? `/vehicles/vehiclesdetails/${e.url.slice(-3, -1)}` : `/vehicles/vehiclesdetails/${e.url.slice(-2, -1)}`} className="mx-4">
+                  <button className="btn btn-warning ">Learn more!</button>
+                </Link>
+
+                <button className="btn btn-outline-danger  mx-4" onClick={() => actions.addFavVehicle(e.name, e.url)} >
+
+                  {vehiclesFavListArr.includes(e.name) ? <i class="fa-solid fa-heart" ></i> : <i class="fa-regular fa-heart"></i>}
+
+                </button>
+              </div>
+            </div>
+
+          ))}
+        <div className=" row ">
+          <div className=" col text-center my-3" >
+            <button type="button" className={store.vehiclesPagination === 5 || store.vehiclesData.length === 0 ? "hide" : store.vehiclesData.length != page ? "hide" : " btn btn-warning w-50 p-2 "}
+              onClick={() => actions.moreVehiclesFunc("next", setPage(page + 1))} ><b>More Vehicles!</b></button>
+
+            <div className={store.vehiclesData.length === 0 ? "hide" : store.vehiclesData.length == page ? "hide" : "spinner-grow text-warning"} role="status">
+            </div>
+
+          </div>
+
+
+
+        </div>
+      </div>
+
+    </div>
+
+  )
+}
